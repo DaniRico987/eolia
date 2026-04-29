@@ -1,0 +1,75 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "DM Sans", sans-serif;
+    @apply bg-crema text-tierra-oscura;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Fraunces", serif;
+    @apply font-semibold;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  .animate-slide-out-right {
+    animation: slide-out-right 0.3s ease-out;
+  }
+
+  .btn-primary {
+    @apply bg-verde-musgo text-crema px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-verde-oliva disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-cta {
+    @apply bg-dorado-trigo text-tierra-oscura px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-destructive {
+    @apply border border-red-700 text-red-700 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply bg-blanco-hueso rounded-2xl border border-arena shadow-subtle p-4;
+  }
+
+  .input-field {
+    @apply bg-arena border border-transparent rounded-lg px-4 py-2 text-tierra-oscura focus:outline-none focus:ring-2 focus:ring-verde-oliva transition-all duration-200;
+  }
+
+  .badge-free {
+    @apply bg-green-100 text-verde-musgo px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-busy {
+    @apply bg-amber-100 text-dorado-trigo px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
