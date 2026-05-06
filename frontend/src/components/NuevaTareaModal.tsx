@@ -1,12 +1,15 @@
-﻿import { X, Plus } from "lucide-react";
+import React from "react";
+import { X, Plus } from "lucide-react";
+import type { TipoTarea, TareaInput } from "../types";
 
-/** @typedef {import("../types").TipoTarea} TipoTarea */
-/** @typedef {import("../types").TareaInput} TareaInput */
-
-/** @type {TipoTarea[]} */
-const TIPOS = ["riego", "fumigacion", "cosecha", "fertilizacion", "monitoreo"];
-/** @type {Record<TipoTarea, string>} */
-const TIPOS_LABELS = {
+const TIPOS: TipoTarea[] = [
+  "riego",
+  "fumigacion",
+  "cosecha",
+  "fertilizacion",
+  "monitoreo",
+];
+const TIPOS_LABELS: Record<TipoTarea, string> = {
   riego: "Riego",
   fumigacion: "Fumigación",
   cosecha: "Cosecha",
@@ -14,7 +17,15 @@ const TIPOS_LABELS = {
   monitoreo: "Monitoreo",
 };
 
-/** @param {{ isOpen: boolean; onClose: () => void; onCrear: () => void | Promise<void>; cargando: boolean; nuevaTarea: TareaInput; setNuevaTarea: (value: TareaInput) => void }} props */
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  onCrear: () => void | Promise<void>;
+  cargando: boolean;
+  nuevaTarea: TareaInput;
+  setNuevaTarea: (value: TareaInput) => void;
+}
+
 export default function NuevaTareaModal({
   isOpen,
   onClose,
@@ -22,7 +33,7 @@ export default function NuevaTareaModal({
   cargando,
   nuevaTarea,
   setNuevaTarea,
-}) {
+}: Props) {
   if (!isOpen) return null;
 
   const handleCrear = () => {
@@ -71,7 +82,7 @@ export default function NuevaTareaModal({
                 onChange={(e) =>
                   setNuevaTarea({
                     ...nuevaTarea,
-                    tipo: /** @type {TipoTarea} */ (e.target.value),
+                    tipo: e.target.value as TipoTarea,
                   })
                 }
               >
@@ -89,8 +100,8 @@ export default function NuevaTareaModal({
               <div className="flex items-center gap-3">
                 <input
                   type="range"
-                  min="1"
-                  max="24"
+                  min={1}
+                  max={24}
                   className="flex-1 cursor-pointer accent-dorado-trigo"
                   value={nuevaTarea.duracion}
                   onChange={(e) =>
@@ -115,8 +126,8 @@ export default function NuevaTareaModal({
               <div className="flex items-center gap-3">
                 <input
                   type="range"
-                  min="1"
-                  max="5"
+                  min={1}
+                  max={5}
                   className="flex-1 cursor-pointer accent-verde-musgo"
                   value={nuevaTarea.prioridad}
                   onChange={(e) =>
@@ -138,8 +149,8 @@ export default function NuevaTareaModal({
               <div className="flex items-center gap-3">
                 <input
                   type="range"
-                  min="0"
-                  max="23"
+                  min={0}
+                  max={23}
                   className="flex-1 cursor-pointer accent-dorado-trigo"
                   value={nuevaTarea.llegada}
                   onChange={(e) =>
@@ -174,7 +185,6 @@ export default function NuevaTareaModal({
               "Creando..."
             ) : (
               <>
-                {" "}
                 <Plus size={16} /> Agregar Tarea
               </>
             )}

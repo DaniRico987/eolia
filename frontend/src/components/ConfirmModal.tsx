@@ -1,14 +1,35 @@
-﻿import { AlertTriangle, Loader2 } from "lucide-react";
+import React from "react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
-/** @param {{ titulo: string; mensaje: string; botonConfirmar?: string; onConfirmar: () => void | Promise<void>; onCancelar: () => void; cargando?: boolean }} props */
-export default function ConfirmModal({ titulo, mensaje, botonConfirmar = "Eliminar", onConfirmar, onCancelar, cargando = false }) {
+interface Props {
+  titulo: string;
+  mensaje: string;
+  botonConfirmar?: string;
+  onConfirmar: () => void | Promise<void>;
+  onCancelar: () => void;
+  cargando?: boolean;
+}
+
+export default function ConfirmModal({
+  titulo,
+  mensaje,
+  botonConfirmar = "Eliminar",
+  onConfirmar,
+  onCancelar,
+  cargando = false,
+}: Props) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="card bg-blanco-hueso max-w-sm w-full animate-slide-in-right">
         <div className="flex gap-3">
-          <AlertTriangle size={24} className="text-red-600 flex-shrink-0 mt-1" />
+          <AlertTriangle
+            size={24}
+            className="text-red-600 flex-shrink-0 mt-1"
+          />
           <div className="flex-1">
-            <h2 className="font-fraunces text-lg font-bold text-tierra-oscura mb-1">{titulo}</h2>
+            <h2 className="font-fraunces text-lg font-bold text-tierra-oscura mb-1">
+              {titulo}
+            </h2>
             <p className="text-sm text-tierra-oscura opacity-70">{mensaje}</p>
           </div>
         </div>
@@ -28,7 +49,8 @@ export default function ConfirmModal({ titulo, mensaje, botonConfirmar = "Elimin
           >
             {cargando ? (
               <>
-                <Loader2 size={16} className="animate-spin" /> {botonConfirmar}...
+                <Loader2 size={16} className="animate-spin" /> {botonConfirmar}
+                ...
               </>
             ) : (
               botonConfirmar

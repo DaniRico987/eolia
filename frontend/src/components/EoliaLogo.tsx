@@ -1,13 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const PRIMARY_LOGO_PATH = "/logo-eolia.png";
 const FALLBACK_LOGO_PATH = "/favicon.svg";
+
+interface Props {
+  alt?: string;
+  className?: string;
+  fallbackClassName?: string;
+}
 
 export default function EoliaLogo({
   alt = "Eolia",
   className = "h-10 w-auto",
   fallbackClassName = "text-2xl",
-}) {
+}: Props) {
   const [fallback, setFallback] = useState(false);
 
   if (fallback) {
@@ -24,10 +30,11 @@ export default function EoliaLogo({
       alt={alt}
       className={className}
       onError={(event) => {
-        if (event.currentTarget.src.includes(FALLBACK_LOGO_PATH)) {
+        const target = event.currentTarget as HTMLImageElement;
+        if (target.src.includes(FALLBACK_LOGO_PATH)) {
           setFallback(true);
         } else {
-          event.currentTarget.src = FALLBACK_LOGO_PATH;
+          target.src = FALLBACK_LOGO_PATH;
         }
       }}
     />

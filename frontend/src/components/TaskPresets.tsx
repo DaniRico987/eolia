@@ -1,16 +1,10 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { crearTarea, eliminarTarea } from "../api/client";
 import { useSnackbar } from "../hooks/useSnackbar";
 import { Plus, Download, Edit2, Trash2, FolderOpen } from "lucide-react";
+import type { PresetTareas, PresetTarea, Tarea, Usuario } from "../types";
 
-/** @typedef {import("../types").PresetTareas} PresetTareas */
-/** @typedef {import("../types").PresetTarea} PresetTarea */
-/** @typedef {import("../types").Tarea} Tarea */
-/** @typedef {import("../types").Usuario} Usuario */
-
-// Presets predefinidos
-/** @type {PresetTareas[]} */
-const PRESETS_DEFAULT = [
+const PRESETS_DEFAULT: PresetTareas[] = [
   {
     id: "preset-1",
     nombre: "Algoritmos Básico",
@@ -341,23 +335,37 @@ const PRESETS_DEFAULT = [
   },
 ];
 
-/** @param {{ usuario: Usuario; tareas: Tarea[]; onCargarPreset: () => void }} props */
-export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
+type ModoModal = "nuevo" | "editar";
+type AccionCarga = "reemplazar" | "merge";
+
+export default function TaskPresets({
+  usuario,
+  tareas,
+  onCargarPreset,
+}: {
+  usuario: Usuario;
+  tareas: Tarea[];
+  onCargarPreset: () => void;
+}) {
   const { showSnackbar } = useSnackbar();
-  const [presets, setPresets] = useState(() => {
-    /** @type {PresetTareas[]} */
-    const guardados = JSON.parse(localStorage.getItem("taskPresets") || "[]");
-    return [...PRESETS_DEFAULT, ...guardados];
+  const [presets, setPresets] = useState<PresetTareas[]>(() => {
+    try {
+      const guardados = JSON.parse(
+        localStorage.getItem("taskPresets") || "[]",
+      ) as PresetTareas[];
+      return [...PRESETS_DEFAULT, ...guardados];
+    } catch {
+      return [...PRESETS_DEFAULT];
+    }
   });
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombrePreset, setNombrePreset] = useState("");
-  const [editando, setEditando] = useState(/** @type {number | null} */ (null));
+  const [editando, setEditando] = useState<number | null>(null);
   const [cargando, setCargando] = useState(false);
-  const [modalAccion, setModalAccion] = useState(/** @type {"opciones" | null} */ (null));
-  const [presetACargar, setPresetACargar] = useState(/** @type {PresetTareas | null} */ (null));
+  const [modalAccion, setModalAccion] = useState<AccionCarga | null>(null);
+  const [presetACargar, setPresetACargar] = useState<PresetTareas | null>(null);
 
-  /** @param {PresetTareas[]} nuevosPresets */
-  const guardarPresets = (nuevosPresets) => {
+  const guardarPresets = (nuevosPresets: PresetTareas[]) => {
     const personalizados = nuevosPresets.filter((p) => !p.esDefault);
     setPresets(nuevosPresets);
     localStorage.setItem("taskPresets", JSON.stringify(personalizados));
@@ -401,7 +409,7 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
       setEditando(null);
       showSnackbar(`Conjunto "${nombrePreset}" actualizado`, "success");
     } else {
-      const nuevoPreset = {
+      const nuevoPreset: PresetTareas = {
         id: Date.now(),
         nombre: nombrePreset,
         tareas: tareasActuales.map((t) => ({
@@ -422,20 +430,21 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
     setMostrarModal(false);
   };
 
-  /** @param {PresetTareas} preset */
-  const handleCargarPresetClick = (preset) => {
+  const handleCargarPresetClick = (preset: PresetTareas) => {
     const tareasExistentes = tareas.filter((t) => t.estado === "pendiente");
 
     if (tareasExistentes.length > 0) {
       setPresetACargar(preset);
-      setModalAccion("opciones");
+      setModalAccion("merge");
     } else {
-      handleCargarPreset(preset, "reemplazar");
+      void handleCargarPreset(preset, "reemplazar");
     }
   };
 
-  /** @param {PresetTareas} preset @param {"reemplazar" | "merge"} accion */
-  const handleCargarPreset = async (preset, accion) => {
+  const handleCargarPreset = async (
+    preset: PresetTareas,
+    accion: AccionCarga,
+  ) => {
     setCargando(true);
     try {
       if (accion === "reemplazar") {
@@ -458,16 +467,18 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
       onCargarPreset();
       setModalAccion(null);
       setPresetACargar(null);
-    } catch (e) {
-      const error = /** @type {{ message?: string }} */ (e);
-      showSnackbar("Error al cargar el preset: " + (error.message || "desconocido"), "error");
+    } catch (error: unknown) {
+      const typedError = error as { message?: string };
+      showSnackbar(
+        "Error al cargar el preset: " + (typedError.message || "desconocido"),
+        "error",
+      );
     } finally {
       setCargando(false);
     }
   };
 
-  /** @param {PresetTareas} preset @param {number} index */
-  const handleEditarPreset = (preset, index) => {
+  const handleEditarPreset = (preset: PresetTareas, index: number) => {
     if (preset.esDefault) {
       showSnackbar("No puedes editar presets del sistema", "error");
       return;
@@ -477,14 +488,13 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
     setMostrarModal(true);
   };
 
-  /** @param {number} index */
-  const handleEliminarPreset = (index) => {
+  const handleEliminarPreset = (index: number) => {
     const preset = presets[index];
     if (preset.esDefault) {
       showSnackbar("No puedes eliminar presets del sistema", "error");
       return;
     }
-    if (confirm("¿Está seguro de que desea eliminar este preset?")) {
+    if (window.confirm("¿Está seguro de que desea eliminar este preset?")) {
       guardarPresets(presets.filter((_, i) => i !== index));
       showSnackbar(`Conjunto "${preset.nombre}" eliminado`, "info");
     }
@@ -512,7 +522,7 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
               setNombrePreset("");
               setMostrarModal(true);
             }}
-            className="btn-cta self-start shrink-0 text-xs px-3 py-2 flex items-center gap-1 sm:self-auto "
+            className="btn-cta self-start shrink-0 text-xs px-3 py-2 flex items-center gap-1 sm:self-auto"
           >
             <Plus size={14} /> Nuevo
           </button>
@@ -527,13 +537,9 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
             presets.map((preset, idx) => (
               <div
                 key={preset.id}
-                className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg p-3 transition min-h-[70px] ${
-                  preset.esDefault
-                    ? "bg-verde-musgo/5 border border-verde-musgo/20"
-                    : "bg-arena hover:bg-arena/80 border border-arena"
-                }`}
+                className={`flex items-center gap-3 rounded-lg p-3 transition min-h-[62px] ${preset.esDefault ? "bg-verde-musgo/5 border border-verde-musgo/20" : "bg-arena hover:bg-arena/80 border border-arena"}`}
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p
                     className="font-medium text-sm text-tierra-oscura truncate leading-tight"
                     title={preset.nombre}
@@ -542,7 +548,7 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
                   </p>
                   <p
                     className="text-xs text-tierra-oscura opacity-60 truncate leading-tight mt-1"
-                    title={`$${preset.tareas.length} tareas $${preset.esDefault ? "• Sistema" : `• $${preset.fechaCreacion}`}`}
+                    title={`${preset.tareas.length} tareas ${preset.esDefault ? "• Sistema" : `• ${preset.fechaCreacion}`}`}
                   >
                     {preset.tareas.length} tareas{" "}
                     {preset.esDefault
@@ -550,15 +556,16 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
                       : `• ${preset.fechaCreacion}`}
                   </p>
                 </div>
-                <div className="flex gap-1 flex-shrink-0 self-center">
-                  <button
-                    onClick={() => handleCargarPresetClick(preset)}
-                    disabled={cargando}
-                    className="p-2 bg-verde-musgo text-crema hover:bg-verde-oliva transition rounded-lg disabled:opacity-50"
-                    title="Cargar este conjunto"
-                  >
-                    <FolderOpen size={16} />
-                  </button>
+
+                <button
+                  onClick={() => handleCargarPresetClick(preset)}
+                  disabled={cargando}
+                  className="shrink-0 p-2 bg-verde-musgo text-crema hover:bg-verde-oliva transition rounded-lg disabled:opacity-50"
+                  title="Cargar este conjunto"
+                >
+                  <FolderOpen size={16} />
+                </button>
+                <div className="flex gap-1 flex-shrink-0 items-center">
                   {!preset.esDefault && (
                     <>
                       <button
@@ -591,7 +598,7 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
         )}
       </section>
 
-      {modalAccion === "opciones" && presetACargar && (
+      {modalAccion !== null && presetACargar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card bg-blanco-hueso max-w-sm w-full">
             <h3 className="font-fraunces font-bold text-lg text-tierra-oscura mb-2">
@@ -603,13 +610,15 @@ export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
             </p>
             <div className="space-y-2 flex flex-col">
               <button
-                onClick={() => handleCargarPreset(presetACargar, "reemplazar")}
+                onClick={() =>
+                  void handleCargarPreset(presetACargar, "reemplazar")
+                }
                 className="btn-destructive"
               >
                 Borrar y Cargar Nuevo
               </button>
               <button
-                onClick={() => handleCargarPreset(presetACargar, "merge")}
+                onClick={() => void handleCargarPreset(presetACargar, "merge")}
                 className="btn-primary"
               >
                 Añadir al Existente

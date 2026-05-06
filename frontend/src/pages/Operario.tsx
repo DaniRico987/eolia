@@ -1,11 +1,11 @@
-﻿import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getTareas } from "../api/client";
 import TareaCard from "../components/TareaCard";
 import { RotateCw, Clock, Zap, CheckCircle } from "lucide-react";
+import type { Tarea } from "../types";
 
-/** @typedef {import("../types").Tarea} Tarea */
 export default function Operario() {
-  const [tareas, setTareas] = useState(/** @type {Tarea[]} */ ([]));
+  const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(true);
 
   const cargar = async () => {
@@ -37,8 +37,8 @@ export default function Operario() {
         <>
           <section>
             <h3 className="flex items-center gap-2 font-fraunces text-lg font-semibold text-tierra-oscura mb-4">
-              <Clock size={20} className="text-dorado-trigo" />
-              Pendientes ({pendientes.length})
+              <Clock size={20} className="text-dorado-trigo" /> Pendientes (
+              {pendientes.length})
             </h3>
             <div className="space-y-3">
               {pendientes.map((t) => (
@@ -54,8 +54,8 @@ export default function Operario() {
 
           <section>
             <h3 className="flex items-center gap-2 font-fraunces text-lg font-semibold text-tierra-oscura mb-4">
-              <Zap size={20} className="text-verde-oliva" />
-              En ejecución ({enProceso.length})
+              <Zap size={20} className="text-verde-oliva" /> En ejecución (
+              {enProceso.length})
             </h3>
             <div className="space-y-3">
               {enProceso.map((t) => (
@@ -71,8 +71,8 @@ export default function Operario() {
 
           <section>
             <h3 className="flex items-center gap-2 font-fraunces text-lg font-semibold text-tierra-oscura mb-4">
-              <CheckCircle size={20} className="text-green-600" />
-              Completadas ({completadas.length})
+              <CheckCircle size={20} className="text-green-600" /> Completadas (
+              {completadas.length})
             </h3>
             <div className="space-y-3">
               {completadas.map((t) => (

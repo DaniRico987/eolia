@@ -1,12 +1,14 @@
+import React from "react";
 import { CheckCircle2, Info, TriangleAlert, XCircle, X } from "lucide-react";
 import { useSnackbar } from "../hooks/useSnackbar";
 
-/** @typedef {import("../types").Snackbar} Snackbar */
-/** @typedef {import("../types").TipoSnackbar} TipoSnackbar */
-/** @typedef {import("lucide-react").LucideIcon} LucideIcon */
+import type { LucideIcon } from "lucide-react";
+import type { Snackbar as SnackbarType, TipoSnackbar } from "../types";
 
-/** @type {Record<TipoSnackbar, { bg: string; icon: LucideIcon; border: string }>} */
-const SNACKBAR_STYLES = {
+const SNACKBAR_STYLES: Record<
+  TipoSnackbar,
+  { bg: string; icon: LucideIcon; border: string }
+> = {
   success: {
     bg: "bg-verde-musgo",
     icon: CheckCircle2,
@@ -29,8 +31,13 @@ const SNACKBAR_STYLES = {
   },
 };
 
-/** @param {{ snackbar: Snackbar; onClose: () => void }} props */
-function Snackbar({ snackbar, onClose }) {
+function Snackbar({
+  snackbar,
+  onClose,
+}: {
+  snackbar: SnackbarType;
+  onClose: () => void;
+}) {
   const style = SNACKBAR_STYLES[snackbar.type] || SNACKBAR_STYLES.info;
   const Icon = style.icon;
 
@@ -64,7 +71,10 @@ export default function SnackbarContainer() {
     >
       {snackbars.map((snackbar) => (
         <div key={snackbar.id} className="pointer-events-auto">
-          <Snackbar snackbar={snackbar} onClose={() => removeSnackbar(snackbar.id)} />
+          <Snackbar
+            snackbar={snackbar}
+            onClose={() => removeSnackbar(snackbar.id)}
+          />
         </div>
       ))}
     </div>

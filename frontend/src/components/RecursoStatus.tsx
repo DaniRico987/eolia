@@ -1,25 +1,31 @@
-﻿import { Droplets, Tractor, Sprout, CheckCircle } from "lucide-react";
+import React from "react";
+import { Droplets, Tractor, Sprout, CheckCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-/** @typedef {import("lucide-react").LucideIcon} LucideIcon */
-
-/** @type {Record<string, LucideIcon>} */
-const ICONOS = {
+const ICONOS: Record<string, LucideIcon> = {
   bomba_agua: Droplets,
   tractor: Tractor,
   equipo_fumigador: Sprout,
   ninguno: CheckCircle,
 };
 
-/** @param {string} recurso */
-const formatRecurso = (recurso) =>
+const formatRecurso = (recurso: string) =>
   recurso
     .replace(/_/g, " ")
     .split(" ")
     .map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1))
     .join(" ");
 
-/** @param {{ recursos: Array<{ id: string; nombre: string; estado: string; detalle: string; tareaActual?: { nombre: string } | null; cola?: Array<{ nombre: string }> }> }} props */
-export default function RecursoStatus({ recursos }) {
+interface Recurso {
+  id: string;
+  nombre: string;
+  estado: string;
+  detalle: string;
+  tareaActual?: { nombre: string } | null;
+  cola?: Array<{ nombre: string }>;
+}
+
+export default function RecursoStatus({ recursos }: { recursos: Recurso[] }) {
   return (
     <div className="grid grid-cols-1 gap-3">
       {recursos.map((recurso) => {
@@ -44,7 +50,10 @@ export default function RecursoStatus({ recursos }) {
           <div
             key={recurso.id}
             className={`card flex items-center justify-between gap-3 ${contenedorClase}`}
-            style={{ transition: "background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease" }}
+            style={{
+              transition:
+                "background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease",
+            }}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <IconComponent

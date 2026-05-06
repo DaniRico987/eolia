@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   getTareas,
   crearTarea,
@@ -10,7 +10,6 @@ import { useSnackbar } from "../hooks/useSnackbar";
 import TareaCard from "../components/TareaCard";
 import GanttChart from "../components/GanttChart";
 import RecursoStatus from "../components/RecursoStatus";
-import TaskPresets from "../components/TaskPresets";
 import ConfirmModal from "../components/ConfirmModal";
 import NuevaTareaModal from "../components/NuevaTareaModal";
 import {
@@ -26,33 +25,63 @@ import {
   Activity,
   ListChecks,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type {
+  Algoritmo,
+  RecursoMapa,
+  ResultadoSimulacion,
+  Tarea,
+  TareaInput,
+  Usuario,
+} from "../types";
+import TaskPresets from "../components/TaskPresets";
 
-/** @typedef {import("../types").Algoritmo} Algoritmo */
-/** @typedef {import("../types").RecursoMapa} RecursoMapa */
-/** @typedef {import("../types").ResultadoSimulacion} ResultadoSimulacion */
-/** @typedef {import("../types").Tarea} Tarea */
-/** @typedef {import("../types").TareaInput} TareaInput */
-/** @typedef {import("../types").Usuario} Usuario */
-/** @typedef {Tarea & { recurso?: string }} TareaSimulada */
-/** @typedef {"slow" | "normal" | "fast"} SimulationSpeed */
-/** @typedef {"idle" | "running" | "paused" | "finished"} SimulationStatus */
-/** @typedef {{ id: string; nombre: string; estado: string; detalle: string; tareaActual: TareaSimulada | null; cola: TareaSimulada[] }} SimulationResourceState */
-/** @typedef {{ id: number; tarea: TareaSimulada; nombre: string; startTime: number; endTime: number; leftPct: number; widthPct: number; progressLabel: string; color: string }} GanttBar */
-/** @typedef {{ id: string; nombre: string; bars: GanttBar[] }} GanttRow */
-/** @typedef {{ status: SimulationStatus; currentTime: number; speed: SimulationSpeed; finalTime: number; tasks: TareaSimulada[]; resourceStates: SimulationResourceState[]; pendingQueue: TareaSimulada[]; runningTasks: TareaSimulada[]; completedTasks: TareaSimulada[]; ganttRows: GanttRow[]; currentTask: TareaSimulada | null; nextTask: TareaSimulada | null; }} SimulationState */
+type TareaSimulada = Tarea & { recurso?: string };
+type SimulationSpeed = "slow" | "normal" | "fast";
+type SimulationStatus = "idle" | "running" | "paused" | "finished";
+type SimulationResourceState = {
+  id: string;
+  nombre: string;
+  estado: string;
+  detalle: string;
+  tareaActual: TareaSimulada | null;
+  cola: TareaSimulada[];
+};
+type GanttBar = {
+  id: number;
+  tarea: TareaSimulada;
+  nombre: string;
+  startTime: number;
+  endTime: number;
+  leftPct: number;
+  widthPct: number;
+  progressLabel: string;
+  color: string;
+};
+type GanttRow = { id: string; nombre: string; bars: GanttBar[] };
+type SimulationState = {
+  status: SimulationStatus;
+  currentTime: number;
+  speed: SimulationSpeed;
+  finalTime: number;
+  tasks: TareaSimulada[];
+  resourceStates: SimulationResourceState[];
+  pendingQueue: TareaSimulada[];
+  runningTasks: TareaSimulada[];
+  completedTasks: TareaSimulada[];
+  ganttRows: GanttRow[];
+  currentTask: TareaSimulada | null;
+  nextTask: TareaSimulada | null;
+};
 
-/** @type {Algoritmo[]} */
-const ALGORITMOS = ["fcfs", "sjf", "priority", "round_robin"];
-/** @type {Record<Algoritmo, string>} */
-const ALGORITMO_LABELS = {
+const ALGORITMOS: Algoritmo[] = ["fcfs", "sjf", "priority", "round_robin"];
+const ALGORITMO_LABELS: Record<Algoritmo, string> = {
   fcfs: "FCFS (First-Come First-Served)",
   sjf: "SJF (Shortest Job First)",
   priority: "Priority (Por Prioridad)",
   round_robin: "Round Robin (Quantum)",
 };
-
-/** @type {Record<SimulationSpeed, { label: string; delay: number }>} */
-const SPEEDS = {
+const SPEEDS: Record<SimulationSpeed, { label: string; delay: number }> = {
   slow: { label: "Lento", delay: 1200 },
   normal: { label: "Normal", delay: 600 },
   fast: { label: "Rápido", delay: 200 },
@@ -76,36 +105,32 @@ const TASK_COLORS = [
   "#A0522D",
 ];
 
-/** @type {SimulationState} */
-const SIMULATION_EMPTY = {
+const SIMULATION_EMPTY: SimulationState = {
   status: "idle",
   currentTime: 0,
   speed: "normal",
   finalTime: 0,
-  tasks: /** @type {TareaSimulada[]} */ ([]),
-  resourceStates: /** @type {SimulationResourceState[]} */ ([]),
-  pendingQueue: /** @type {TareaSimulada[]} */ ([]),
-  runningTasks: /** @type {TareaSimulada[]} */ ([]),
-  completedTasks: /** @type {TareaSimulada[]} */ ([]),
-  ganttRows: /** @type {GanttRow[]} */ ([]),
+  tasks: [],
+  resourceStates: [],
+  pendingQueue: [],
+  runningTasks: [],
+  completedTasks: [],
+  ganttRows: [],
   currentTask: null,
   nextTask: null,
 };
 
-/** @param {TareaSimulada[]} tareas */
-const obtenerTiempoFinal = (tareas) =>
+const obtenerTiempoFinal = (tareas: TareaSimulada[]): number =>
   tareas.reduce((maximo, tarea) => Math.max(maximo, tarea.fin ?? 0), 0);
-
-/** @param {number} value */
-const formatearDuracion = (value) =>
+const formatearDuracion = (value: number): string =>
   Number.isInteger(value) ? `${value}` : value.toFixed(1);
-
-/** @param {TareaSimulada} tarea @param {number} indice */
-const obtenerColorTarea = (tarea, indice) =>
+const obtenerColorTarea = (tarea: TareaSimulada, indice: number): string =>
   TASK_COLORS[(tarea.id + indice) % TASK_COLORS.length];
 
-/** @param {TareaSimulada[]} tareasSimuladas @param {number} currentTime */
-const crearSnapshotSimulacion = (tareasSimuladas, currentTime) => {
+const crearSnapshotSimulacion = (
+  tareasSimuladas: TareaSimulada[],
+  currentTime: number,
+): SimulationState => {
   const tareasOrdenadas = [...tareasSimuladas].sort((a, b) => {
     const inicioA = a.inicio ?? a.llegada;
     const inicioB = b.inicio ?? b.llegada;
@@ -163,6 +188,7 @@ const crearSnapshotSimulacion = (tareasSimuladas, currentTime) => {
     };
   });
 
+  const totalTime = obtenerTiempoFinal(tareasSimuladas);
   const ganttRows = RECURSOS_BASE.map((recurso, rowIndex) => {
     const bars = tareasOrdenadas
       .filter((tarea) => (tarea.recurso || "ninguno") === recurso.id)
@@ -178,10 +204,8 @@ const crearSnapshotSimulacion = (tareasSimuladas, currentTime) => {
         const duracion = Math.max(1, fin - inicio);
         const progreso =
           currentTime >= fin ? duracion : Math.max(0, currentTime - inicio);
-        const widthPct =
-          (progreso / Math.max(1, obtenerTiempoFinal(tareasSimuladas))) * 100;
-        const leftPct =
-          (inicio / Math.max(1, obtenerTiempoFinal(tareasSimuladas))) * 100;
+        const widthPct = (progreso / Math.max(1, totalTime)) * 100;
+        const leftPct = (inicio / Math.max(1, totalTime)) * 100;
 
         return {
           id: tarea.id,
@@ -196,14 +220,15 @@ const crearSnapshotSimulacion = (tareasSimuladas, currentTime) => {
         };
       });
 
-    return {
-      id: recurso.id,
-      nombre: recurso.label,
-      bars,
-    };
+    return { id: recurso.id, nombre: recurso.label, bars };
   });
 
   return {
+    status: "running",
+    currentTime,
+    speed: "normal",
+    finalTime: totalTime,
+    tasks: tareasSimuladas,
     resourceStates,
     pendingQueue,
     runningTasks,
@@ -211,12 +236,12 @@ const crearSnapshotSimulacion = (tareasSimuladas, currentTime) => {
     ganttRows,
     currentTask: runningTasks[0] ?? null,
     nextTask: pendingQueue[0] ?? upcomingTasks[0] ?? null,
-    finalTime: obtenerTiempoFinal(tareasSimuladas),
   };
 };
 
-/** @param {Record<string, string>} recursosBackend */
-const crearVistaRecursosBackend = (recursosBackend) =>
+const crearVistaRecursosBackend = (
+  recursosBackend: RecursoMapa,
+): SimulationResourceState[] =>
   RECURSOS_BASE.map((recurso) => {
     const estadoBruto = recursosBackend?.[recurso.id] ?? "libre";
     const libre = estadoBruto === "libre";
@@ -231,18 +256,14 @@ const crearVistaRecursosBackend = (recursosBackend) =>
     };
   });
 
-/** @param {{ usuario: Usuario }} props */
-export default function Dashboard({ usuario }) {
+export default function Dashboard({ usuario }: { usuario: Usuario }) {
   const { showSnackbar } = useSnackbar();
-  const [tareas, setTareas] = useState(/** @type {Tarea[]} */ ([]));
-  const [recursos, setRecursos] = useState(/** @type {RecursoMapa} */ ({}));
-  const [resultado, setResultado] = useState(
-    /** @type {ResultadoSimulacion | null} */ (null),
-  );
-  const [simulacion, setSimulacion] = useState(
-    /** @type {SimulationState} */ (SIMULATION_EMPTY),
-  );
-  const [algoritmo, setAlgoritmo] = useState(/** @type {Algoritmo} */ ("fcfs"));
+  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [recursos, setRecursos] = useState<RecursoMapa>({});
+  const [resultado, setResultado] = useState<ResultadoSimulacion | null>(null);
+  const [simulacion, setSimulacion] =
+    useState<SimulationState>(SIMULATION_EMPTY);
+  const [algoritmo, setAlgoritmo] = useState<Algoritmo>("fcfs");
   const [quantum, setQuantum] = useState(2);
   const [cargando, setCargando] = useState(false);
   const [mostrarConfirmLimpiar, setMostrarConfirmLimpiar] = useState(false);
@@ -250,18 +271,14 @@ export default function Dashboard({ usuario }) {
   const [mostrarModalNueva, setMostrarModalNueva] = useState(false);
   const [cargandoCrear, setCargandoCrear] = useState(false);
   const [paginaTareas, setPaginaTareas] = useState(1);
-  const [nueva, setNueva] = useState(
-    /** @type {TareaInput} */ ({
-      nombre: "",
-      tipo: "riego",
-      duracion: 2,
-      prioridad: 2,
-      llegada: 6,
-    }),
-  );
-  const intervaloRef = useRef(
-    /** @type {ReturnType<typeof setInterval> | null} */ (null),
-  );
+  const [nueva, setNueva] = useState<TareaInput>({
+    nombre: "",
+    tipo: "riego",
+    duracion: 2,
+    prioridad: 2,
+    llegada: 6,
+  });
+  const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tareasPendientes = tareas.filter((t) => t.estado === "pendiente");
   const tareasPorPagina = 6;
@@ -276,51 +293,47 @@ export default function Dashboard({ usuario }) {
     indiceInicio + tareasPorPagina,
   );
 
-  const cargar = async () => {
+  const cargar = async (): Promise<void> => {
     const [t, r] = await Promise.all([getTareas(), getRecursos()]);
     setTareas(t.data);
     setRecursos(r.data);
   };
 
-  const limpiarIntervalo = () => {
+  const limpiarIntervalo = (): void => {
     if (intervaloRef.current) {
       clearInterval(intervaloRef.current);
       intervaloRef.current = null;
     }
   };
 
-  const reiniciarSimulacion = () => {
+  const reiniciarSimulacion = (): void => {
     limpiarIntervalo();
     setResultado(null);
     setSimulacion(SIMULATION_EMPTY);
   };
 
-  /** @param {TareaSimulada[]} tareasSimuladas @param {"idle" | "running" | "paused" | "finished"} estado @param {"slow" | "normal" | "fast"} velocidad */
   const construirSimulacion = (
-    tareasSimuladas,
-    estado,
-    velocidad = "normal",
-  ) => {
+    tareasSimuladas: TareaSimulada[],
+    estado: SimulationStatus,
+    velocidad: SimulationSpeed = "normal",
+  ): SimulationState => {
     const snapshot = crearSnapshotSimulacion(tareasSimuladas, 0);
     return {
-      ...SIMULATION_EMPTY,
+      ...snapshot,
       status: estado,
       speed: velocidad,
       currentTime: 0,
       tasks: tareasSimuladas,
-      ...snapshot,
     };
   };
 
-  const iniciarSimulacion = async () => {
+  const iniciarSimulacion = async (): Promise<void> => {
     if (tareasPendientes.length === 0) return;
 
     setCargando(true);
     try {
       const res = await simular(algoritmo, quantum);
-      const tareasSimuladas = /** @type {TareaSimulada[]} */ (
-        res.data.tareas || []
-      );
+      const tareasSimuladas = res.data.tareas || [];
       setResultado(res.data);
       setSimulacion(
         construirSimulacion(tareasSimuladas, "running", simulacion.speed),
@@ -330,11 +343,10 @@ export default function Dashboard({ usuario }) {
         "success",
         3500,
       );
-    } catch (e) {
-      const error =
-        /** @type {{ response?: { data?: { detail?: string } } }} */ (e);
+    } catch (error: unknown) {
+      const typedError = error as { response?: { data?: { detail?: string } } };
       showSnackbar(
-        error.response?.data?.detail || "Error en simulación",
+        typedError.response?.data?.detail || "Error en simulación",
         "error",
       );
     } finally {
@@ -342,7 +354,7 @@ export default function Dashboard({ usuario }) {
     }
   };
 
-  const alternarSimulacion = async () => {
+  const alternarSimulacion = async (): Promise<void> => {
     if (simulacion.status === "running") {
       setSimulacion((prev) => ({ ...prev, status: "paused" }));
       return;
@@ -361,14 +373,13 @@ export default function Dashboard({ usuario }) {
     await iniciarSimulacion();
   };
 
-  /** @param {SimulationSpeed} velocidad */
-  const actualizarVelocidad = (velocidad) => {
+  const actualizarVelocidad = (velocidad: SimulationSpeed): void => {
     setSimulacion((prev) => ({ ...prev, speed: velocidad }));
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      cargar();
+      void cargar();
     }, 0);
 
     return () => clearTimeout(timer);
@@ -395,14 +406,13 @@ export default function Dashboard({ usuario }) {
 
         return {
           ...prev,
-          currentTime: siguienteTiempo,
           ...snapshot,
           status: finalizo ? "finished" : "running",
         };
       });
     }, intervalo);
 
-    return limpiarIntervalo;
+    return () => limpiarIntervalo();
   }, [simulacion.status, simulacion.speed, simulacion.tasks]);
 
   useEffect(() => {
@@ -411,7 +421,7 @@ export default function Dashboard({ usuario }) {
     }
   }, [simulacion.status, showSnackbar]);
 
-  const handleCrear = async () => {
+  const handleCrear = async (): Promise<void> => {
     if (!nueva.nombre.trim()) return;
     setCargandoCrear(true);
     try {
@@ -428,10 +438,10 @@ export default function Dashboard({ usuario }) {
       await cargar();
       showSnackbar(`Tarea "${nueva.nombre}" creada`, "success");
       setMostrarModalNueva(false);
-    } catch (e) {
-      const error = /** @type {{ message?: string }} */ (e);
+    } catch (error: unknown) {
+      const typedError = error as { message?: string };
       showSnackbar(
-        "Error al crear tarea: " + (error.message || "desconocido"),
+        "Error al crear tarea: " + (typedError.message || "desconocido"),
         "error",
       );
     } finally {
@@ -439,8 +449,7 @@ export default function Dashboard({ usuario }) {
     }
   };
 
-  /** @param {number} id */
-  const handleEliminar = async (id) => {
+  const handleEliminar = async (id: number): Promise<void> => {
     try {
       await eliminarTarea(id);
       reiniciarSimulacion();
@@ -452,11 +461,12 @@ export default function Dashboard({ usuario }) {
     }
   };
 
-  const handleLimpiarTodas = async () => {
+  const handleLimpiarTodas = async (): Promise<void> => {
     if (tareasPendientes.length === 0) {
       showSnackbar("No hay tareas pendientes para limpiar", "info");
       return;
     }
+
     setCargandoLimpiar(true);
     try {
       for (const tarea of tareasPendientes) {
@@ -481,7 +491,6 @@ export default function Dashboard({ usuario }) {
     simulacion.status === "idle"
       ? crearVistaRecursosBackend(recursos)
       : simulacion.resourceStates;
-
   const estadoSimulacion =
     simulacion.status === "running"
       ? "En ejecución"
@@ -490,7 +499,6 @@ export default function Dashboard({ usuario }) {
         : simulacion.status === "finished"
           ? "Finalizada"
           : "Lista";
-
   const etiquetaBoton =
     simulacion.status === "running"
       ? "Pausar"
@@ -499,15 +507,13 @@ export default function Dashboard({ usuario }) {
         : simulacion.status === "finished"
           ? "Reiniciar"
           : "Simular";
-
   const iconoBoton =
     simulacion.status === "running"
       ? Pause
       : simulacion.status === "finished"
         ? RotateCcw
         : Play;
-
-  const IconBtn = iconoBoton;
+  const IconBtn: LucideIcon = iconoBoton;
 
   const tiempoActual = simulacion.currentTime;
   const tareaActual = simulacion.currentTask;
@@ -522,7 +528,6 @@ export default function Dashboard({ usuario }) {
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-[0.75fr_0.9fr_0.9fr] gap-4 sm:gap-6 items-stretch">
-          {/* Columna 1: Presets */}
           <div className="min-w-0 h-full">
             <div className="h-full space-y-4">
               {usuario.rol === "ingeniero" && (
@@ -532,14 +537,13 @@ export default function Dashboard({ usuario }) {
                   onCargarPreset={() => {
                     reiniciarSimulacion();
                     setPaginaTareas(1);
-                    cargar();
+                    void cargar();
                   }}
                 />
               )}
             </div>
           </div>
 
-          {/* Columna 2: Simulación */}
           <div className="min-w-0 h-full">
             <div className="h-full space-y-4">
               <section className="card">
@@ -555,7 +559,7 @@ export default function Dashboard({ usuario }) {
                       className="input-field w-full border border-verde-oliva/30 font-medium text-tierra-oscura"
                       value={algoritmo}
                       onChange={(e) =>
-                        setAlgoritmo(/** @type {Algoritmo} */ (e.target.value))
+                        setAlgoritmo(e.target.value as Algoritmo)
                       }
                     >
                       {ALGORITMOS.map((a) => (
@@ -599,11 +603,7 @@ export default function Dashboard({ usuario }) {
                             key={clave}
                             type="button"
                             onClick={() =>
-                              actualizarVelocidad(
-                                /** @type {"slow" | "normal" | "fast"} */ (
-                                  clave
-                                ),
-                              )
+                              actualizarVelocidad(clave as SimulationSpeed)
                             }
                             className={`rounded-lg border px-3 py-2 text-left transition-all duration-200 ${activo ? "bg-verde-musgo text-crema border-verde-musgo" : "bg-blanco-hueso text-tierra-oscura border-arena hover:border-verde-oliva/40"}`}
                           >
@@ -694,7 +694,6 @@ export default function Dashboard({ usuario }) {
             </div>
           </div>
 
-          {/* Columna 3: Recursos */}
           <div className="min-w-0 h-full">
             <div className="h-full space-y-4">
               <section className="card">
@@ -707,7 +706,6 @@ export default function Dashboard({ usuario }) {
           </div>
         </div>
 
-        {/* Debajo de las columnas: Lista de tareas */}
         <section className="space-y-4 mt-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h3 className="font-fraunces font-bold text-tierra-oscura text-lg">
@@ -737,7 +735,7 @@ export default function Dashboard({ usuario }) {
                 key={t.id}
                 tarea={t}
                 onEliminar={handleEliminar}
-                puedeEliminar={true}
+                puedeEliminar
               />
             ))}
             {tareasPendientes.length === 0 && (

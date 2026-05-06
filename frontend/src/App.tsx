@@ -1,18 +1,17 @@
-﻿import { useState } from "react";
+import React, { useState } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Operario from "./pages/Operario";
 import Navbar from "./components/Navbar";
-/** @typedef {import("./types").Usuario} Usuario */
+import type { Usuario } from "./types";
 
 export default function App() {
-  const [usuario, setUsuario] = useState(() => {
+  const [usuario, setUsuario] = useState<Usuario | null>(() => {
     const guardado = localStorage.getItem("usuario");
     return guardado ? JSON.parse(guardado) : null;
   });
 
-  /** @param {Usuario} user */
-  const handleLogin = (user) => setUsuario(user);
+  const handleLogin = (user: Usuario) => setUsuario(user);
 
   const handleLogout = () => {
     localStorage.removeItem("usuario");

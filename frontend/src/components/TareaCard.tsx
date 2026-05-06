@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import React, { useState } from "react";
 import {
   Droplets,
   Sprout,
@@ -9,13 +9,10 @@ import {
   Skull,
 } from "lucide-react";
 import ConfirmModal from "./ConfirmModal";
+import type { LucideIcon } from "lucide-react";
+import type { Tarea } from "../types";
 
-/** @typedef {import("../types").EstadoTarea} EstadoTarea */
-/** @typedef {import("../types").Tarea} Tarea */
-/** @typedef {import("lucide-react").LucideIcon} LucideIcon */
-
-/** @type {Record<Tarea["tipo"], LucideIcon>} */
-const ICONOS_TIPO = {
+const ICONOS_TIPO: Record<string, LucideIcon> = {
   riego: Droplets,
   fumigacion: Sprout,
   cosecha: Wheat,
@@ -23,8 +20,15 @@ const ICONOS_TIPO = {
   monitoreo: Eye,
 };
 
-/** @param {{ tarea: Tarea; onEliminar?: (id: number) => void | Promise<void>; puedeEliminar: boolean }} props */
-export default function TareaCard({ tarea, onEliminar, puedeEliminar }) {
+export default function TareaCard({
+  tarea,
+  onEliminar,
+  puedeEliminar,
+}: {
+  tarea: Tarea;
+  onEliminar?: (id: number) => void | Promise<void>;
+  puedeEliminar: boolean;
+}) {
   const [mostrarConfirm, setMostrarConfirm] = useState(false);
   const [cargando, setCargando] = useState(false);
 

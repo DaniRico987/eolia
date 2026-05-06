@@ -1,6 +1,16 @@
 export type RolUsuario = "ingeniero" | "operario";
-export type EstadoTarea = "pendiente" | "ejecutando" | "completada" | "interrumpida" | "esperando";
-export type TipoTarea = "riego" | "fumigacion" | "cosecha" | "fertilizacion" | "monitoreo";
+export type EstadoTarea =
+  | "pendiente"
+  | "ejecutando"
+  | "completada"
+  | "interrumpida"
+  | "esperando";
+export type TipoTarea =
+  | "riego"
+  | "fumigacion"
+  | "cosecha"
+  | "fertilizacion"
+  | "monitoreo";
 export type Algoritmo = "fcfs" | "sjf" | "priority" | "round_robin";
 export type EstadoRecurso = "libre" | string;
 export type TipoSnackbar = "info" | "success" | "warning" | "error";
@@ -71,7 +81,11 @@ export interface Snackbar {
 }
 
 export interface SnackbarContextValue {
-  showSnackbar: (message: string, type?: TipoSnackbar, duration?: number) => { id: number; clear: () => void };
+  showSnackbar: (
+    message: string,
+    type?: TipoSnackbar,
+    duration?: number,
+  ) => { id: number; clear: () => void };
   removeSnackbar: (id: number) => void;
   snackbars: Snackbar[];
 }

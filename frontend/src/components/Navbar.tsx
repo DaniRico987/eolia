@@ -1,9 +1,14 @@
-﻿import { LogOut } from "lucide-react";
+import React from "react";
+import { LogOut } from "lucide-react";
 import EoliaLogo from "./EoliaLogo";
-/** @typedef {import("../types").Usuario} Usuario */
+import type { Usuario } from "../types";
 
-/** @param {{ usuario: Usuario; onLogout: () => void }} props */
-export default function Navbar({ usuario, onLogout }) {
+interface Props {
+  usuario: Usuario;
+  onLogout: () => void;
+}
+
+export default function Navbar({ usuario, onLogout }: Props) {
   return (
     <nav className="bg-verde-musgo text-crema px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-subtle">
       <div className="flex items-center gap-3">
@@ -15,7 +20,7 @@ export default function Navbar({ usuario, onLogout }) {
       <div className="flex items-center gap-4">
         <span
           className="text-xs sm:text-sm opacity-90 truncate"
-          title={`$${usuario.nombre} — $${usuario.rol}`}
+          title={`${usuario.nombre} — ${usuario.rol}`}
         >
           {usuario.nombre}
         </span>
