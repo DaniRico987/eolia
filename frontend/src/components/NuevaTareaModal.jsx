@@ -1,5 +1,4 @@
-﻿import { useState } from "react";
-import { X, Plus } from "lucide-react";
+﻿import { X, Plus } from "lucide-react";
 
 /** @typedef {import("../types").TipoTarea} TipoTarea */
 /** @typedef {import("../types").TareaInput} TareaInput */
@@ -12,11 +11,18 @@ const TIPOS_LABELS = {
   fumigacion: "Fumigación",
   cosecha: "Cosecha",
   fertilizacion: "Fertilización",
-  monitoreo: "Monitoreo"
+  monitoreo: "Monitoreo",
 };
 
 /** @param {{ isOpen: boolean; onClose: () => void; onCrear: () => void | Promise<void>; cargando: boolean; nuevaTarea: TareaInput; setNuevaTarea: (value: TareaInput) => void }} props */
-export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nuevaTarea, setNuevaTarea }) {
+export default function NuevaTareaModal({
+  isOpen,
+  onClose,
+  onCrear,
+  cargando,
+  nuevaTarea,
+  setNuevaTarea,
+}) {
   if (!isOpen) return null;
 
   const handleCrear = () => {
@@ -48,7 +54,9 @@ export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nu
               className="input-field w-full"
               placeholder="Ej: Riego de cultivo A"
               value={nuevaTarea.nombre}
-              onChange={(e) => setNuevaTarea({ ...nuevaTarea, nombre: e.target.value })}
+              onChange={(e) =>
+                setNuevaTarea({ ...nuevaTarea, nombre: e.target.value })
+              }
             />
           </div>
 
@@ -86,7 +94,10 @@ export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nu
                   className="flex-1 cursor-pointer accent-dorado-trigo"
                   value={nuevaTarea.duracion}
                   onChange={(e) =>
-                    setNuevaTarea({ ...nuevaTarea, duracion: Number(e.target.value) })
+                    setNuevaTarea({
+                      ...nuevaTarea,
+                      duracion: Number(e.target.value),
+                    })
                   }
                 />
                 <span className="text-sm font-semibold text-dorado-trigo w-12 text-right">
@@ -109,7 +120,10 @@ export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nu
                   className="flex-1 cursor-pointer accent-verde-musgo"
                   value={nuevaTarea.prioridad}
                   onChange={(e) =>
-                    setNuevaTarea({ ...nuevaTarea, prioridad: Number(e.target.value) })
+                    setNuevaTarea({
+                      ...nuevaTarea,
+                      prioridad: Number(e.target.value),
+                    })
                   }
                 />
                 <span className="text-sm font-semibold text-verde-musgo w-8 text-right">
@@ -129,7 +143,10 @@ export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nu
                   className="flex-1 cursor-pointer accent-dorado-trigo"
                   value={nuevaTarea.llegada}
                   onChange={(e) =>
-                    setNuevaTarea({ ...nuevaTarea, llegada: Number(e.target.value) })
+                    setNuevaTarea({
+                      ...nuevaTarea,
+                      llegada: Number(e.target.value),
+                    })
                   }
                 />
                 <span className="text-sm font-semibold text-dorado-trigo w-12 text-right">
@@ -153,7 +170,14 @@ export default function NuevaTareaModal({ isOpen, onClose, onCrear, cargando, nu
             disabled={!nuevaTarea.nombre || cargando}
             className="btn-cta flex items-center gap-2"
           >
-            {cargando ? "Creando..." : <> <Plus size={16} /> Agregar Tarea</>}
+            {cargando ? (
+              "Creando..."
+            ) : (
+              <>
+                {" "}
+                <Plus size={16} /> Agregar Tarea
+              </>
+            )}
           </button>
         </div>
       </div>

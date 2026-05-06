@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Operario from "./pages/Operario";
@@ -6,12 +6,10 @@ import Navbar from "./components/Navbar";
 /** @typedef {import("./types").Usuario} Usuario */
 
 export default function App() {
-  const [usuario, setUsuario] = useState(/** @type {Usuario | null} */ (null));
-
-  useEffect(() => {
+  const [usuario, setUsuario] = useState(() => {
     const guardado = localStorage.getItem("usuario");
-    if (guardado) setUsuario(JSON.parse(guardado));
-  }, []);
+    return guardado ? JSON.parse(guardado) : null;
+  });
 
   /** @param {Usuario} user */
   const handleLogin = (user) => setUsuario(user);
@@ -30,7 +28,7 @@ export default function App() {
         {usuario.rol === "ingeniero" ? (
           <Dashboard usuario={usuario} />
         ) : (
-          <Operario usuario={usuario} />
+          <Operario />
         )}
       </div>
     </div>

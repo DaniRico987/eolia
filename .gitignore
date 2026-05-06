@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

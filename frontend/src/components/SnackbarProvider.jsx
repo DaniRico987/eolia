@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { SnackbarContext } from "../hooks/useSnackbar";
 
 /** @typedef {import("../types").Snackbar} Snackbar */
@@ -8,39 +8,33 @@ import { SnackbarContext } from "../hooks/useSnackbar";
 export function SnackbarProvider({ children }) {
   const [snackbars, setSnackbars] = useState(/** @type {Snackbar[]} */ ([]));
 
-  const showSnackbar = useCallback(
-    /** @param {string} message @param {TipoSnackbar} [type] @param {number} [duration] */
-    (message, type = "info", duration = 3000) => {
-      const id = Date.now();
-      const newSnackbar = { id, message, type, duration };
+  /** @param {number} id */
+  const removeSnackbar = (id) => {
+    setSnackbars((prev) => prev.filter((s) => s.id !== id));
+  };
 
-      setSnackbars((prev) => {
-        // Mantener máximo 5 snackbars visibles
-        const updated = [...prev, newSnackbar];
-        if (updated.length > 5) {
-          // Remover el más antiguo
-          return updated.slice(-5);
-        }
-        return updated;
-      });
+  /** @param {string} message @param {TipoSnackbar} [type] @param {number} [duration] */
+  const showSnackbar = (message, type = "info", duration = 3000) => {
+    const id = Date.now();
+    const newSnackbar = { id, message, type, duration };
 
-      // Auto-remover después del duration
-      const timer = setTimeout(() => {
-        removeSnackbar(id);
-      }, duration);
+    setSnackbars((prev) => {
+      // Mantener máximo 5 snackbars visibles
+      const updated = [...prev, newSnackbar];
+      if (updated.length > 5) {
+        // Remover el más antiguo
+        return updated.slice(-5);
+      }
+      return updated;
+    });
 
-      return { id, clear: () => clearTimeout(timer) };
-    },
-    []
-  );
+    // Auto-remover después del duration
+    const timer = setTimeout(() => {
+      removeSnackbar(id);
+    }, duration);
 
-  const removeSnackbar = useCallback(
-    /** @param {number} id */
-    (id) => {
-      setSnackbars((prev) => prev.filter((s) => s.id !== id));
-    },
-    []
-  );
+    return { id, clear: () => clearTimeout(timer) };
+  };
 
   return (
     <SnackbarContext.Provider value={{ showSnackbar, removeSnackbar, snackbars }}>

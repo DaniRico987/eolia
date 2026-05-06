@@ -1,6 +1,5 @@
 from typing import List
-from models.tarea import Tarea
-from copy import deepcopy
+from models.tarea import Tarea, EstadoTarea
 
 
 def round_robin(tareas: List[Tarea], quantum: float = 2.0) -> List[Tarea]:
@@ -45,7 +44,6 @@ def round_robin(tareas: List[Tarea], quantum: float = 2.0) -> List[Tarea]:
             tarea.inicio = inicio_real[tarea.id]
             tarea.fin = tiempo_actual
             tarea.tiempo_retorno = tiempo_actual - tarea.llegada
-            from models.tarea import EstadoTarea
             tarea.estado = EstadoTarea.COMPLETADA
             resultado.append(tarea)
 

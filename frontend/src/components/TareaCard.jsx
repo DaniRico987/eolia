@@ -14,15 +14,6 @@ import ConfirmModal from "./ConfirmModal";
 /** @typedef {import("../types").Tarea} Tarea */
 /** @typedef {import("lucide-react").LucideIcon} LucideIcon */
 
-/** @type {Record<EstadoTarea, string>} */
-const COLORES_ESTADO = {
-  pendiente: "bg-amber-50 text-dorado-trigo border-dorado-trigo",
-  ejecutando: "bg-verde-oliva/10 text-verde-oliva border-verde-oliva",
-  completada: "bg-green-50 text-green-700 border-green-700",
-  interrumpida: "bg-red-50 text-red-700 border-red-700",
-  esperando: "bg-arena text-tierra-oscura border-tierra-oscura",
-};
-
 /** @type {Record<Tarea["tipo"], LucideIcon>} */
 const ICONOS_TIPO = {
   riego: Droplets,
@@ -68,11 +59,6 @@ export default function TareaCard({ tarea, onEliminar, puedeEliminar }) {
               {tarea.nombre}
             </span>
           </div>
-            {/* <span
-              className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 whitespace-nowrap border ${COLORES_ESTADO[tarea.estado]}`}
-            >
-              {tarea.estado}
-            </span> */}
         </div>
 
         <div className="flex gap-3 text-xs text-tierra-oscura mt-3">

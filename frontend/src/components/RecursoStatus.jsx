@@ -1,6 +1,5 @@
 ﻿import { Droplets, Tractor, Sprout, CheckCircle } from "lucide-react";
 
-/** @typedef {import("../types").RecursoMapa} RecursoMapa */
 /** @typedef {import("lucide-react").LucideIcon} LucideIcon */
 
 /** @type {Record<string, LucideIcon>} */
@@ -14,22 +13,40 @@ const ICONOS = {
 /** @param {string} recurso */
 const formatRecurso = (recurso) =>
   recurso
-    .replace("_", " ")
+    .replace(/_/g, " ")
     .split(" ")
     .map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1))
     .join(" ");
 
-/** @param {{ recursos: RecursoMapa }} props */
+/** @param {{ recursos: Array<{ id: string; nombre: string; estado: string; detalle: string; tareaActual?: { nombre: string } | null; cola?: Array<{ nombre: string }> }> }} props */
 export default function RecursoStatus({ recursos }) {
   return (
     <div className="grid grid-cols-1 gap-3">
-      {Object.entries(recursos).map(([recurso, estado]) => {
-        const IconComponent = ICONOS[recurso] || Sprout;
-        const esLibre = estado === "libre";
+      {recursos.map((recurso) => {
+        const IconComponent = ICONOS[recurso.id] || Sprout;
+        const estadoNormalizado = recurso.estado.toLowerCase();
+        const esLibre = estadoNormalizado === "libre";
+        const esCola = estadoNormalizado === "en cola";
+
+        const contenedorClase = esLibre
+          ? "bg-green-50 border-green-200"
+          : esCola
+            ? "bg-amber-50 border-amber-300"
+            : "bg-red-50 border-red-300";
+
+        const badgeClase = esLibre
+          ? "bg-green-100 text-verde-musgo"
+          : esCola
+            ? "bg-amber-100 text-dorado-trigo"
+            : "bg-red-100 text-red-700";
 
         return (
-          <div key={recurso} className="card flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
+          <div
+            key={recurso.id}
+            className={`card flex items-center justify-between gap-3 ${contenedorClase}`}
+            style={{ transition: "background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease" }}
+          >
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <IconComponent
                 size={22}
                 className="text-verde-musgo flex-shrink-0"
@@ -37,17 +54,26 @@ export default function RecursoStatus({ recursos }) {
               <div className="min-w-0">
                 <p
                   className="text-xs text-tierra-oscura opacity-70"
-                  title={formatRecurso(recurso)}
+                  title={formatRecurso(recurso.id)}
                 >
-                  {formatRecurso(recurso)}
+                  {recurso.nombre}
+                </p>
+                <p className="text-[11px] text-tierra-oscura/70 truncate">
+                  {recurso.detalle}
                 </p>
               </div>
             </div>
             <span
-              title={esLibre ? "Disponible" : `En uso: ${estado}`}
-              className={esLibre ? "badge-free" : "badge-busy"}
+              title={
+                esLibre
+                  ? "Disponible"
+                  : esCola
+                    ? "En cola"
+                    : `Ocupado${recurso.tareaActual ? ` por ${recurso.tareaActual.nombre}` : ""}`
+              }
+              className={`${badgeClase} px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300`}
             >
-              {esLibre ? "Libre" : `Usando: ${estado}`}
+              {recurso.estado}
             </span>
           </div>
         );

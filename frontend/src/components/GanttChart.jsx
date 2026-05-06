@@ -4,16 +4,21 @@ import { X, Droplets, Sprout, Wheat, Leaf, Eye } from "lucide-react";
 /** @typedef {import("../types").Tarea} Tarea */
 /** @typedef {import("lucide-react").LucideIcon} LucideIcon */
 
-const COLORES = [
-  "#3B5233",
-  "#C4922A",
-  "#6B7C45",
-  "#8B5E3C",
-  "#4A6741",
-  "#D4A843",
-  "#5C7A52",
-  "#A0522D",
-];
+/** @typedef {{
+ *   id: string;
+ *   nombre: string;
+ *   bars: Array<{
+ *     id: number;
+ *     tarea: Tarea & { recurso?: string };
+ *     nombre: string;
+ *     startTime: number;
+ *     endTime: number;
+ *     leftPct: number;
+ *     widthPct: number;
+ *     progressLabel: string;
+ *     color: string;
+ *   }>;
+ * }} GanttRow */
 
 /** @type {Record<Tarea["tipo"], LucideIcon>} */
 const ICONOS_TIPO = {
@@ -24,7 +29,7 @@ const ICONOS_TIPO = {
   monitoreo: Eye,
 };
 
-/** @param {{ tarea: Tarea; onClose: () => void }} props */
+/** @param {{ tarea: Tarea & { recurso?: string }; onClose: () => void }} props */
 function TaskDetailModal({ tarea, onClose }) {
   const IconComponent = ICONOS_TIPO[tarea.tipo] || Eye;
 
@@ -91,6 +96,10 @@ function TaskDetailModal({ tarea, onClose }) {
               <p className="text-sm text-tierra-oscura">
                 <span className="font-medium">Fin:</span> {tarea.fin}h
               </p>
+              <p className="text-sm text-tierra-oscura">
+                <span className="font-medium">Recurso:</span>{" "}
+                {tarea.recurso || "ninguno"}
+              </p>
             </div>
           </div>
 
@@ -119,67 +128,104 @@ function TaskDetailModal({ tarea, onClose }) {
   );
 }
 
-/** @param {{ tareas: Tarea[] }} props */
-export default function GanttChart({ tareas }) {
-  const [tareaSeleccionada, setTareaSeleccionada] = useState(/** @type {Tarea | null} */ (null));
+/** @param {{ rows: GanttRow[]; currentTime: number; totalTime: number }} props */
+export default function GanttChart({ rows, currentTime, totalTime }) {
+  const [tareaSeleccionada, setTareaSeleccionada] = useState(
+    /** @type {(Tarea & { recurso?: string }) | null} */ (null),
+  );
 
-  if (!tareas || tareas.length === 0) return null;
+  if (!rows || rows.length === 0) return null;
 
-  const completadas = tareas.filter((t) => t.fin !== null);
-  if (completadas.length === 0) return null;
-
-  const minTiempo = Math.min(...completadas.map((t) => t.llegada));
-  const maxTiempo = Math.max(...completadas.map((t) => t.fin ?? t.llegada));
-  const rango = maxTiempo - minTiempo;
+  const rango = Math.max(1, totalTime || 0);
+  const tiempoActualPct = Math.min(
+    100,
+    (Math.max(0, currentTime) / rango) * 100,
+  );
 
   return (
     <>
       <div className="card">
         <h3 className="font-fraunces font-bold text-tierra-oscura mb-2 flex items-center gap-2">
-          📊 Diagrama de Gantt
+          📊 Diagrama de Gantt en vivo
         </h3>
         <p className="text-xs text-tierra-oscura opacity-60 mb-4">
-          Haz clic en una tarea para ver detalles
+          Las barras aparecen y crecen a medida que avanza el reloj simulado
         </p>
-        <div className="space-y-2 min-w-full overflow-x-auto">
-          {completadas.map((tarea, i) => {
-            const offsetPct = (((tarea.inicio ?? tarea.llegada) - minTiempo) / rango) * 100;
-            const widthPct = (tarea.duracion / rango) * 100;
-            return (
-              <div key={tarea.id} className="flex items-center gap-3">
-                <span
-                  className="text-xs sm:text-sm text-tierra-oscura font-medium w-24 sm:w-32 truncate"
-                  title={tarea.nombre}
-                >
-                  {tarea.nombre}
-                </span>
-                <div className="flex-1 min-w-0 bg-arena rounded-full h-6 sm:h-7 relative">
-                  <button
-                    onClick={() => setTareaSeleccionada(tarea)}
-                    className="absolute h-6 sm:h-7 rounded-full flex items-center justify-center text-blanco-hueso text-xs font-medium whitespace-nowrap hover:shadow-subtle hover:scale-105 transition-all cursor-pointer"
-                    style={{
-                      left: `${offsetPct}%`,
-                      width: `${Math.max(widthPct, 5)}%`,
-                      backgroundColor: COLORES[i % COLORES.length],
-                    }}
-                    title={`Clic para ver detalles: ${tarea.nombre}`}
-                  >
-                    {tarea.duracion}h
-                  </button>
-                </div>
-                <span
-                  className="text-xs text-tierra-oscura opacity-60 w-14 sm:w-16 text-right flex-shrink-0 font-medium"
-                  title={`$${tarea.inicio ?? tarea.llegada}→$${tarea.fin}`}
-                >
-                  {tarea.inicio ?? tarea.llegada}→{tarea.fin}
-                </span>
+        <div className="overflow-x-auto">
+          <div className="min-w-[760px] space-y-3">
+            <div className="grid grid-cols-[160px_1fr] gap-3 items-end">
+              <div />
+              <div className="flex items-center justify-between text-xs text-tierra-oscura/60 font-medium px-1">
+                <span>0</span>
+                <span>Tiempo simulado</span>
+                <span>{rango}h</span>
               </div>
-            );
-          })}
+            </div>
+
+            {rows.map((row) => (
+              <div
+                key={row.id}
+                className="grid grid-cols-[160px_1fr] gap-3 items-start"
+              >
+                <div className="pt-3">
+                  <p
+                    className="text-sm font-semibold text-tierra-oscura truncate"
+                    title={row.nombre}
+                  >
+                    {row.nombre}
+                  </p>
+                </div>
+                <div className="relative h-16 rounded-2xl bg-arena/70 overflow-hidden border border-arena">
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-50"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(to right, rgba(59,82,51,0.12) 1px, transparent 1px)",
+                      backgroundSize: `${100 / Math.max(1, Math.min(rango, 12))}% 100%`,
+                    }}
+                  />
+
+                  <div
+                    className="absolute top-0 bottom-0 border-l-2 border-dashed border-dorado-trigo/80 pointer-events-none"
+                    style={{ left: `${tiempoActualPct}%` }}
+                  >
+                    <span className="absolute -top-5 -translate-x-1/2 text-[10px] font-semibold text-dorado-trigo whitespace-nowrap">
+                      T = {currentTime}
+                    </span>
+                  </div>
+
+                  {row.bars.map((bar) => (
+                    <button
+                      key={bar.id}
+                      onClick={() => setTareaSeleccionada(bar.tarea)}
+                      className="absolute top-2 bottom-2 rounded-xl flex items-center justify-center text-blanco-hueso text-xs font-medium whitespace-nowrap shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer overflow-hidden"
+                      style={{
+                        left: `${bar.leftPct}%`,
+                        width: `${Math.max(bar.widthPct, bar.widthPct > 0 ? 4 : 0)}%`,
+                        backgroundColor: bar.color,
+                        transition:
+                          "width 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease",
+                      }}
+                      title={`Clic para ver detalles: ${bar.nombre}`}
+                    >
+                      <span
+                        className={`px-2 text-left leading-tight ${bar.widthPct < 12 ? "opacity-0" : "opacity-100"}`}
+                      >
+                        {bar.nombre}
+                        <span className="block text-[10px] font-normal opacity-80">
+                          {bar.progressLabel}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="flex justify-between text-xs text-tierra-oscura opacity-60 mt-3 font-medium">
-          <span>{minTiempo}h</span>
-          <span>{maxTiempo}h</span>
+          <span>0h</span>
+          <span>{rango}h</span>
         </div>
       </div>
 

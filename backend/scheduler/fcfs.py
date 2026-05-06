@@ -1,5 +1,5 @@
 from typing import List
-from models.tarea import Tarea, EstadoTarea
+from models.tarea import Tarea
 
 
 def fcfs(tareas: List[Tarea]) -> List[Tarea]:

@@ -4,10 +4,7 @@ import TareaCard from "../components/TareaCard";
 import { RotateCw, Clock, Zap, CheckCircle } from "lucide-react";
 
 /** @typedef {import("../types").Tarea} Tarea */
-/** @typedef {import("../types").Usuario} Usuario */
-
-/** @param {{ usuario: Usuario }} props */
-export default function Operario({ usuario }) {
+export default function Operario() {
   const [tareas, setTareas] = useState(/** @type {Tarea[]} */ ([]));
   const [loading, setLoading] = useState(true);
 

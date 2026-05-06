@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState } from "react";
 import { crearTarea, eliminarTarea } from "../api/client";
 import { useSnackbar } from "../hooks/useSnackbar";
 import { Plus, Download, Edit2, Trash2, FolderOpen } from "lucide-react";
@@ -344,20 +344,17 @@ const PRESETS_DEFAULT = [
 /** @param {{ usuario: Usuario; tareas: Tarea[]; onCargarPreset: () => void }} props */
 export default function TaskPresets({ usuario, tareas, onCargarPreset }) {
   const { showSnackbar } = useSnackbar();
-  const [presets, setPresets] = useState(/** @type {PresetTareas[]} */ ([]));
+  const [presets, setPresets] = useState(() => {
+    /** @type {PresetTareas[]} */
+    const guardados = JSON.parse(localStorage.getItem("taskPresets") || "[]");
+    return [...PRESETS_DEFAULT, ...guardados];
+  });
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombrePreset, setNombrePreset] = useState("");
   const [editando, setEditando] = useState(/** @type {number | null} */ (null));
   const [cargando, setCargando] = useState(false);
   const [modalAccion, setModalAccion] = useState(/** @type {"opciones" | null} */ (null));
   const [presetACargar, setPresetACargar] = useState(/** @type {PresetTareas | null} */ (null));
-
-  useEffect(() => {
-    /** @type {PresetTareas[]} */
-    const guardados = JSON.parse(localStorage.getItem("taskPresets") || "[]");
-    const presetsCombinados = [...PRESETS_DEFAULT, ...guardados];
-    setPresets(presetsCombinados);
-  }, []);
 
   /** @param {PresetTareas[]} nuevosPresets */
   const guardarPresets = (nuevosPresets) => {

@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 import json
 from datetime import datetime
 
 from database import inicializar_db, get_connection
-from models.tarea import Tarea, TipoTarea, EstadoTarea
+from models.tarea import Tarea, TipoTarea
 from scheduler.fcfs import fcfs
 from scheduler.sjf import sjf
 from scheduler.priority import priority
@@ -140,12 +140,6 @@ def simular(data: SimulacionRequest, rol: str = "ingeniero"):
         json.dumps(metricas),
         json.dumps([t.id for t in resultado])
     ))
-    # Actualizar estado de tareas
-    for t in resultado:
-        conn.execute("""
-            UPDATE tareas SET estado=?, inicio=?, fin=?, tiempo_espera=?, tiempo_retorno=?
-            WHERE id=?
-        """, (t.estado.value, t.inicio, t.fin, t.tiempo_espera, t.tiempo_retorno, t.id))
     conn.commit()
     conn.close()
 
