@@ -29,25 +29,20 @@ export default function Login({
 
   return (
     <div className="min-h-screen bg-crema flex items-center justify-center px-4">
-      <div className="card bg-blanco-hueso w-full max-w-sm">
+      <div className="card !bg-verde-musgo w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="mb-4">
-            <EoliaLogo
-              className="h-24 sm:h-28 w-auto"
-              fallbackClassName="text-6xl"
-            />
-          </div>
-          <h1 className="font-fraunces text-3xl font-bold text-verde-musgo">
-            Eolia
-          </h1>
-          <p className="text-tierra-oscura opacity-70 text-sm mt-1">
+          <EoliaLogo
+            className="h-24 sm:h-28 w-auto"
+            fallbackClassName="text-6xl"
+          />
+          <p className="text-blanco-hueso opacity-70 text-sm mt-1">
             Sistema de Gestión Agrícola
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-tierra-oscura mb-2">
+            <label className="block text-xs font-medium text-blanco-hueso mb-2">
               Correo
             </label>
             <input
@@ -59,7 +54,7 @@ export default function Login({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-tierra-oscura mb-2">
+            <label className="block text-xs font-medium text-blanco-hueso mb-2">
               Contraseña
             </label>
             <input
@@ -87,7 +82,7 @@ export default function Login({
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-arena space-y-2 text-xs text-tierra-oscura opacity-60">
+        <div className="mt-8 pt-6 border-t border-arena space-y-2 text-xs text-blanco-hueso opacity-60">
           <p>
             <span className="font-semibold">Ingeniero:</span>{" "}
             ingeniero@eolia.com

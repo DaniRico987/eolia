@@ -13,7 +13,7 @@ export default function Navbar({ usuario, onLogout }: Props) {
     <nav className="bg-verde-musgo text-crema px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-subtle">
       <div className="flex items-center gap-3">
         <EoliaLogo
-          className="h-14 sm:h-14 w-auto"
+          className="h-16 sm:h-16 w-auto"
           fallbackClassName="text-2xl"
         />
       </div>
