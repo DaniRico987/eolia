@@ -561,7 +561,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-[0.75fr_0.9fr_0.9fr] gap-4 sm:gap-6 items-stretch">
           <div className="min-w-0 h-full">
-            <div className="h-full space-y-4">
+            <div className="h-full ">
               {usuario.rol === "ingeniero" && (
                 <TaskPresets
                   usuario={usuario}
@@ -578,7 +578,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
           </div>
 
           <div className="min-w-0 h-full">
-            <div className="h-full space-y-4">
+            <div className="h-full">
               <section className="card">
                 <h3 className="font-fraunces font-bold text-tierra-oscura mb-4 flex items-center gap-2">
                   <Settings size={18} className="text-verde-oliva" /> Simulación
@@ -728,7 +728,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
           </div>
 
           <div className="min-w-0 h-full">
-            <div className="h-full space-y-4">
+            <div className="h-full">
               <section className="card">
                 <h3 className="font-fraunces font-bold text-tierra-oscura mb-4 flex items-center gap-2">
                   🔧 Recursos
@@ -739,7 +739,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
           </div>
         </div>
 
-        <section className="space-y-4 mt-6">
+        <section className="mt-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h3 className="font-fraunces font-bold text-tierra-oscura text-lg">
               Tareas Pendientes ({tareasPendientes.length})
