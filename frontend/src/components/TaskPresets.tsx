@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { crearTarea, eliminarTarea } from "../api/client";
 import { useSnackbar } from "../hooks/useSnackbar";
 import { Plus, Download, Edit2, Trash2, FolderOpen } from "lucide-react";
@@ -335,16 +335,17 @@ const PRESETS_DEFAULT: PresetTareas[] = [
   },
 ];
 
-type ModoModal = "nuevo" | "editar";
 type AccionCarga = "reemplazar" | "merge";
 
 export default function TaskPresets({
   usuario,
   tareas,
+  edicionBloqueada,
   onCargarPreset,
 }: {
   usuario: Usuario;
   tareas: Tarea[];
+  edicionBloqueada: boolean;
   onCargarPreset: () => void;
 }) {
   const { showSnackbar } = useSnackbar();
@@ -365,6 +366,14 @@ export default function TaskPresets({
   const [modalAccion, setModalAccion] = useState<AccionCarga | null>(null);
   const [presetACargar, setPresetACargar] = useState<PresetTareas | null>(null);
 
+  useEffect(() => {
+    if (edicionBloqueada) {
+      setMostrarModal(false);
+      setModalAccion(null);
+      setPresetACargar(null);
+    }
+  }, [edicionBloqueada]);
+
   const guardarPresets = (nuevosPresets: PresetTareas[]) => {
     const personalizados = nuevosPresets.filter((p) => !p.esDefault);
     setPresets(nuevosPresets);
@@ -372,6 +381,14 @@ export default function TaskPresets({
   };
 
   const handleGuardarPreset = () => {
+    if (edicionBloqueada) {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     if (!nombrePreset.trim()) {
       showSnackbar("Ingresa un nombre para el conjunto", "warning");
       return;
@@ -431,6 +448,14 @@ export default function TaskPresets({
   };
 
   const handleCargarPresetClick = (preset: PresetTareas) => {
+    if (edicionBloqueada) {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     const tareasExistentes = tareas.filter((t) => t.estado === "pendiente");
 
     if (tareasExistentes.length > 0) {
@@ -445,6 +470,14 @@ export default function TaskPresets({
     preset: PresetTareas,
     accion: AccionCarga,
   ) => {
+    if (edicionBloqueada) {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     setCargando(true);
     try {
       if (accion === "reemplazar") {
@@ -479,6 +512,14 @@ export default function TaskPresets({
   };
 
   const handleEditarPreset = (preset: PresetTareas, index: number) => {
+    if (edicionBloqueada) {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     if (preset.esDefault) {
       showSnackbar("No puedes editar presets del sistema", "error");
       return;
@@ -489,6 +530,14 @@ export default function TaskPresets({
   };
 
   const handleEliminarPreset = (index: number) => {
+    if (edicionBloqueada) {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     const preset = presets[index];
     if (preset.esDefault) {
       showSnackbar("No puedes eliminar presets del sistema", "error");
@@ -522,6 +571,7 @@ export default function TaskPresets({
               setNombrePreset("");
               setMostrarModal(true);
             }}
+            disabled={edicionBloqueada}
             className="btn-cta self-start shrink-0 text-xs px-3 py-2 flex items-center gap-1 sm:self-auto"
           >
             <Plus size={14} /> Nuevo
@@ -559,7 +609,7 @@ export default function TaskPresets({
 
                 <button
                   onClick={() => handleCargarPresetClick(preset)}
-                  disabled={cargando}
+                  disabled={cargando || edicionBloqueada}
                   className="shrink-0 p-2 bg-verde-musgo text-crema hover:bg-verde-oliva transition rounded-lg disabled:opacity-50"
                   title="Cargar este conjunto"
                 >
@@ -570,6 +620,7 @@ export default function TaskPresets({
                     <>
                       <button
                         onClick={() => handleEditarPreset(preset, idx)}
+                        disabled={edicionBloqueada}
                         className="p-2 bg-dorado-trigo text-tierra-oscura hover:bg-dorado-trigo/80 transition rounded-lg"
                         title="Editar nombre"
                       >
@@ -577,6 +628,7 @@ export default function TaskPresets({
                       </button>
                       <button
                         onClick={() => handleEliminarPreset(idx)}
+                        disabled={edicionBloqueada}
                         className="p-2 bg-red-600 text-white hover:bg-red-700 transition rounded-lg"
                         title="Eliminar"
                       >
@@ -653,6 +705,7 @@ export default function TaskPresets({
                 placeholder="Ej: Riego Matutino"
                 value={nombrePreset}
                 onChange={(e) => setNombrePreset(e.target.value)}
+                disabled={edicionBloqueada}
                 autoFocus
               />
             </div>
@@ -662,7 +715,11 @@ export default function TaskPresets({
               pendiente(s)
             </p>
             <div className="flex gap-2">
-              <button onClick={handleGuardarPreset} className="btn-cta flex-1">
+              <button
+                onClick={handleGuardarPreset}
+                disabled={edicionBloqueada}
+                className="btn-cta flex-1"
+              >
                 {editando !== null ? "Actualizar" : "Guardar"}
               </button>
               <button

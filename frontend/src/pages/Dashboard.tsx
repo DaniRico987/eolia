@@ -422,6 +422,14 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
   }, [simulacion.status, showSnackbar]);
 
   const handleCrear = async (): Promise<void> => {
+    if (simulacion.status !== "idle") {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     if (!nueva.nombre.trim()) return;
     setCargandoCrear(true);
     try {
@@ -450,6 +458,14 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
   };
 
   const handleEliminar = async (id: number): Promise<void> => {
+    if (simulacion.status !== "idle") {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     try {
       await eliminarTarea(id);
       reiniciarSimulacion();
@@ -462,6 +478,14 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
   };
 
   const handleLimpiarTodas = async (): Promise<void> => {
+    if (simulacion.status !== "idle") {
+      showSnackbar(
+        "No puedes modificar tareas durante una simulación activa",
+        "warning",
+      );
+      return;
+    }
+
     if (tareasPendientes.length === 0) {
       showSnackbar("No hay tareas pendientes para limpiar", "info");
       return;
@@ -519,6 +543,14 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
   const tareaActual = simulacion.currentTask;
   const siguienteTarea = simulacion.nextTask;
   const velocidadActual = SPEEDS[simulacion.speed];
+  const edicionBloqueada = simulacion.status !== "idle";
+
+  useEffect(() => {
+    if (edicionBloqueada) {
+      setMostrarModalNueva(false);
+      setMostrarConfirmLimpiar(false);
+    }
+  }, [edicionBloqueada]);
 
   return (
     <div className="min-h-screen bg-crema">
@@ -534,6 +566,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
                 <TaskPresets
                   usuario={usuario}
                   tareas={tareas}
+                  edicionBloqueada={edicionBloqueada}
                   onCargarPreset={() => {
                     reiniciarSimulacion();
                     setPaginaTareas(1);
@@ -714,6 +747,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setMostrarModalNueva(true)}
+                disabled={edicionBloqueada}
                 className="btn-cta text-xs px-3 py-2 flex items-center gap-1.5"
               >
                 <Plus size={16} /> Nueva
@@ -721,6 +755,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
               {tareasPendientes.length > 0 && (
                 <button
                   onClick={() => setMostrarConfirmLimpiar(true)}
+                  disabled={edicionBloqueada}
                   className="btn-destructive text-xs px-3 py-2 flex items-center gap-1.5"
                 >
                   <Trash2 size={16} /> Limpiar todas
@@ -735,7 +770,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
                 key={t.id}
                 tarea={t}
                 onEliminar={handleEliminar}
-                puedeEliminar
+                puedeEliminar={!edicionBloqueada}
               />
             ))}
             {tareasPendientes.length === 0 && (
