@@ -739,7 +739,7 @@ export default function Dashboard({ usuario }: { usuario: Usuario }) {
           </div>
         </div>
 
-        <section className="mt-6">
+        <section className="space-y-4 mt-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h3 className="font-fraunces font-bold text-tierra-oscura text-lg">
               Tareas Pendientes ({tareasPendientes.length})
