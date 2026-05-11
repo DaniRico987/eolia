@@ -38,6 +38,7 @@ export default function GanttChart({
 }) {
   const [tareaSeleccionada, setTareaSeleccionada] =
     useState<TareaSimulada | null>(null);
+  const [hoveredBarId, setHoveredBarId] = useState<number | null>(null);
 
   if (!rows || rows.length === 0) return null;
 
@@ -46,6 +47,9 @@ export default function GanttChart({
     100,
     (Math.max(0, currentTime) / rango) * 100,
   );
+  const IconoTareaSeleccionada = tareaSeleccionada
+    ? ICONOS_TIPO[tareaSeleccionada.tipo]
+    : null;
 
   return (
     <>
@@ -123,10 +127,25 @@ export default function GanttChart({
                         }}
                       >
                         <div className="relative h-full rounded-lg bg-arena/40 border border-arena/20 px-0.5">
+                          {hoveredBarId === bar.id && (
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 rounded-md text-blanco-hueso text-[11px] px-2 py-1 whitespace-nowrap pointer-events-none z-20">
+                              {bar.nombre}
+                            </div>
+                          )}
+
                           <div
                             onClick={() => setTareaSeleccionada(bar.tarea)}
+                            onMouseEnter={() => setHoveredBarId(bar.id)}
+                            onMouseLeave={() => setHoveredBarId(null)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                setTareaSeleccionada(bar.tarea);
+                              }
+                            }}
                             role="button"
                             tabIndex={0}
+                            title={bar.nombre}
                             className={`absolute left-0 top-0 bottom-0 rounded-md shadow-sm hover:shadow-md transition-all cursor-pointer focus:outline-none`}
                             style={{
                               width: `${Math.max(innerPctOfContainer, 0)}%`,
@@ -153,7 +172,90 @@ export default function GanttChart({
         </div>
       </div>
 
-      {/* modal */}
+      {tareaSeleccionada && (
+        <div
+          className="fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4"
+          onClick={() => setTareaSeleccionada(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-arena bg-blanco-hueso shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="px-5 py-4 border-b border-arena flex items-center justify-between">
+              <h4 className="font-fraunces text-lg font-bold text-tierra-oscura flex items-center gap-2">
+                {IconoTareaSeleccionada && (
+                  <IconoTareaSeleccionada
+                    size={18}
+                    className="text-verde-oliva"
+                  />
+                )}
+                Detalle de Tarea
+              </h4>
+              <button
+                type="button"
+                onClick={() => setTareaSeleccionada(null)}
+                className="p-1.5 rounded-lg hover:bg-arena transition-colors"
+                aria-label="Cerrar detalle"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3 text-sm text-tierra-oscura">
+              <div>
+                <p className="text-xs uppercase tracking-wide opacity-60">
+                  Nombre
+                </p>
+                <p className="font-semibold mt-0.5">
+                  {tareaSeleccionada.nombre}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Tipo
+                  </p>
+                  <p className="mt-0.5 capitalize">{tareaSeleccionada.tipo}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Recurso
+                  </p>
+                  <p className="mt-0.5">
+                    {tareaSeleccionada.recurso?.replace(/_/g, " ") ?? "Ninguno"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Inicio
+                  </p>
+                  <p className="mt-0.5">
+                    T = {tareaSeleccionada.inicio ?? tareaSeleccionada.llegada}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Fin
+                  </p>
+                  <p className="mt-0.5">T = {tareaSeleccionada.fin ?? "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Duración
+                  </p>
+                  <p className="mt-0.5">{tareaSeleccionada.duracion}h</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-60">
+                    Prioridad
+                  </p>
+                  <p className="mt-0.5">{tareaSeleccionada.prioridad}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
